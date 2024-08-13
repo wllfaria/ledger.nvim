@@ -5,7 +5,7 @@ local M = {}
 
 --- @class ledger.Config
 --- @field extensions string[]
-
+--- @field default_ignored_paths string[]
 local LedgerConfig = {}
 LedgerConfig.__index = LedgerConfig
 
@@ -19,6 +19,9 @@ local function get_default_config()
       "ledger",
       "hledger",
       "journal",
+    },
+    default_ignored_paths = {
+      ".git",
     },
   }
   return default_config

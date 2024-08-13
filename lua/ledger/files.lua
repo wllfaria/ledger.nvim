@@ -1,5 +1,15 @@
+--- @class ledger.Files
+--- @field is_ledger fun(path: string): boolean
+--- @field is_directory fun(path: string): boolean
+--- @field read_dir_rec fun(base_path: string): table<string, string>
+--- @field read_file fun(path: string): boolean, string[]
+--- @field has_ledger_file fun(path: string): boolean
+--- @field cwd fun(): string
 local M = {}
 
+--- given a file path, returns true when the file matches any of
+--- the extensions set in the config, return false otherwise
+---
 --- @param path string
 --- @return boolean
 function M.is_ledger(path)
@@ -13,9 +23,30 @@ function M.is_ledger(path)
   return has_match
 end
 
-function M.is_directory()
-  local a = ""
-  return a
+--- given a path, return true if its a directory or false if its not
+--- or if its an invalid path
+---
+--- @param path string
+--- @return boolean
+function M.is_directory(path)
+  local ok, result = pcall(vim.uv.fs_stat, path)
+  if not ok then return false end
+  return result ~= nil and result.type == "directory" or false
+end
+
+--- whether a path should be ignored or not on file operations, like reading
+--- recursively.
+---
+--- @param path string
+--- @return boolean
+function M.should_ignore(path)
+  local config = require("ledger.config").setup()
+
+  for _, entry in pairs(config.default_ignored_paths) do
+    if path:match(entry) then return true end
+  end
+
+  return false
 end
 
 --- Reads a directory recursively, adding every file defined in the config
@@ -26,17 +57,24 @@ end
 --- { ["filename.ledger"] = "/path/to/filename.ledger" }
 --- ```
 ---
---- @param path string
+--- @param base_path string
 --- @return table<string, string>
-function M.read_dir_rec(path)
+function M.read_dir_rec(base_path)
   local map = {}
 
-  local recurse = function(_path, acc)
-    local ok, entries = pcall(vim.fn.readdir, _path)
+  local function recurse(path, acc)
+    local ok, entries = pcall(vim.fn.readdir, path)
     if not ok then return end
+    for _, entry in pairs(entries) do
+      local full_path = vim.fs.joinpath(path, entry)
+      if M.should_ignore(full_path) then goto continue end
+      if M.is_directory(full_path) then recurse(full_path, acc) end
+      if M.is_ledger(entry) and not M.is_directory(full_path) then acc[entry] = full_path end
+      ::continue::
+    end
   end
 
-  recurse(path, map)
+  recurse(base_path, map)
 
   return map
 end
@@ -70,6 +108,9 @@ function M.has_ledger_file(path)
   return false
 end
 
-M.has_ledger_file(vim.fn.getcwd())
+--- returns the current working directory
+---
+--- @return string
+function M.cwd() return vim.fn.getcwd() end
 
 return M

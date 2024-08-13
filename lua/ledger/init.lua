@@ -15,7 +15,6 @@ function M.setup(overrides)
   -- our configuration is a singleton, so we don't have to hold the instance,
   -- we can simply call setup and require it later.
   require("ledger.config").setup(overrides or {})
-  local utils = require("ledger.utils")
   local files = require("ledger.files")
 
   local self = setmetatable({}, Ledger)
