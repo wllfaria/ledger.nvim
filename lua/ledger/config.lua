@@ -1,15 +1,25 @@
 local M = {}
 
+--- @class ledger.CompletionSource
+--- @field enabled boolean
+
+--- @class ledger.Completion
+--- @field cmp ledger.CompletionSource
+
 --- @class ledger.PartialConfig
 --- @field extensions string[]?
+--- @field completion ledger.Completion?
 
 --- @class ledger.Config
 --- @field extensions string[]
 --- @field default_ignored_paths string[]
+--- @field completion ledger.Completion
 local LedgerConfig = {}
 LedgerConfig.__index = LedgerConfig
 
-function LedgerConfig.__tostring() return "<LedgerConfig>" end
+function LedgerConfig.__tostring()
+  return "<LedgerConfig>"
+end
 
 --- @return ledger.Config
 local function get_default_config()
@@ -19,6 +29,9 @@ local function get_default_config()
       "ledger",
       "hledger",
       "journal",
+    },
+    completion = {
+      cmp = { enabled = true },
     },
     default_ignored_paths = {
       ".git",

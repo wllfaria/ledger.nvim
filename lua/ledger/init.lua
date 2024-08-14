@@ -14,7 +14,7 @@ Ledger.__index = Ledger
 function M.setup(overrides)
   -- our configuration is a singleton, so we don't have to hold the instance,
   -- we can simply call setup and require it later.
-  require("ledger.config").setup(overrides or {})
+  local config = require("ledger.config").setup(overrides or {})
   local files = require("ledger.files")
 
   local self = setmetatable({}, Ledger)
@@ -27,9 +27,14 @@ function M.setup(overrides)
   --
   -- TODO: actually do what is above lol
   local has_ledger_file = files.has_ledger_file(files.cwd())
-  if not has_ledger_file then return self end
+  if not has_ledger_file then
+    return self
+  end
 
-  local context = require("ledger.context").new()
+  local context = require("ledger.context").new(files.cwd())
+  if config.completion.cmp then
+    require("ledger.completion.cmp").setup()
+  end
 
   --- @type ledger.Main
   local default = {
