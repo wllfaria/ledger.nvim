@@ -1,4 +1,5 @@
 local queries = require("ledger.queries")
+local ts_utils = require("nvim-treesitter.ts_utils")
 
 local M = {}
 
@@ -7,6 +8,9 @@ local M = {}
 --- @field tree TSTree
 --- @field root TSNode
 
+--- get a parser, aswell as the parsed tree and the root node from
+--- a given ledger source file content
+---
 --- @param source string
 --- @return TSSource
 function M.get_parser(source)
@@ -17,6 +21,46 @@ function M.get_parser(source)
   --- @type TSSource
   local result = { root = root, tree = tree, parser = parser }
   return result
+end
+
+--- possible scopes for completion to be queried, those are processed
+--- as:
+---
+--- 1. Posting: displays both account names and commodity names, as
+---    we cannot be certain if the next block of text will be a commodity
+---    or a new account entry on the posting.
+--- 2. Account: when first typing into a posting, we can for sure know
+---    that we are now typing account names, so we only send account names
+---    for completions
+--- 3. Commodity: after writing a account name, we can either add a value
+---    or a commodity, when first typing we will know that it is a commodity
+---    and therefore will only send commodities as completions
+---
+--- @enum Scope
+M.scopes = {
+  Posting = 1,
+  Account = 2,
+  Commodity = 3,
+}
+
+--- gets the current scope the cursor is currently editing
+---
+--- @return Scope
+function M.find_current_scope()
+  local node_at_cursor = ts_utils.get_node_at_cursor()
+  local node_type = node_at_cursor:type()
+
+  local scope
+
+  if node_type == "account" then
+    scope = M.scopes.Account
+  elseif node_type == "commodity" then
+    scope = M.scopes.Commodity
+  elseif node_type == "posting" then
+    scope = M.scopes.Posting
+  end
+
+  return scope
 end
 
 --- creates an iterator with a given query, starting at a given node

@@ -24,14 +24,10 @@ local M = {}
 local LedgerCompletion = {}
 LedgerCompletion.__index = LedgerCompletion
 
+--- we always complete as Values, this seemingly random arbitrary value
+--- comes from the LSP specification
 local completion_item_kind = {
   VALUE = 12,
-}
-
---- @enum CompletionContext
-local completion_context = {
-  Account = 1,
-  Commodity = 2,
 }
 
 --- returns a new completion common
@@ -39,22 +35,34 @@ function M.new()
   return setmetatable({}, LedgerCompletion)
 end
 
+--- returns whether or not this completion engine is available, this will
+--- be true as long as the current workspace has any ledger files attached
+--- to it
+---
+--- TODO: maybe we want to only be available when editing a ledger file
+--- but for now this is fine
 function M.is_available()
   return files.has_ledger_file(files.cwd())
 end
 
+--- queries completion items from the context and calls the completion
+--- engine callback to display them to the users based on the current
+--- scope of editing
+---
 ---@param callback function
 function M.complete(callback)
-  local accounts = context.accounts
+  local completions = context:current_scope_completions()
+
   local completion_items = {}
 
-  for _, account in ipairs(accounts) do
+  for _, item in ipairs(completions) do
+    print(item)
     --- @type CompletionItem
     local completion = {
-      label = account,
+      label = item,
       kind = completion_item_kind.VALUE,
-      sortText = account,
-      insertText = account,
+      sortText = item,
+      insertText = item,
     }
     table.insert(completion_items, completion)
   end

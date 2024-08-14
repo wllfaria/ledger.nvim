@@ -25,7 +25,7 @@ function M.setup(overrides)
   -- In this case, we only initialize user commands and auto commands to
   -- ensure the plugin gets auto-initialized when a ledger buffer is loaded.
   --
-  -- TODO: actually do what is above lol
+  -- TODO: actually do what is stated above lol
   local has_ledger_file = files.has_ledger_file(files.cwd())
   if not has_ledger_file then
     return self

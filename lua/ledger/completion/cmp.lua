@@ -24,11 +24,21 @@ function LedgerCmp:is_available()
   return common.is_available()
 end
 
+--- optional function for debugging purposed that nvim-cmp allows us to
+--- specify
+---
 ---@return string
 function LedgerCmp:get_debug_name()
   return "ledger.nvim"
 end
 
+--- required function that actually display completions for the user,
+--- nvim-cmp gives us a callback that we can call passing the completion
+--- items
+---
+--- we call our common completion interface to get completions and properly
+--- shape them so we are not tied to nvim-cmp
+---
 ---@param _ cmp.SourceCompletionApiParams
 ---@param callback function
 function LedgerCmp:complete(_, callback)
