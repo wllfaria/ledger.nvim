@@ -98,7 +98,7 @@ end
 function M.get_commodities_from_source(node, source, filename, ctx)
   for _, match in M.query_iter(queries.commodities_query, node, source) do
     local commodity_name = vim.treesitter.get_node_text(match, source)
-    ctx.accounts[filename] = {}
+    ctx.commodities[filename] = {}
     table.insert(ctx.commodities[filename], commodity_name)
   end
 end

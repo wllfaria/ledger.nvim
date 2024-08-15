@@ -13,6 +13,45 @@ and other cool features I've missed.
 
 This is a personal side project, so updates might be a little slow.
 
+## Installation
+
+### Lazy.nvim
+
+Add the following snippet to your lazy configuration!
+
+```lua
+{
+  'wllfaria/ledger.nvim',
+  dependencies = { 'nvim-treesitter/nvim-treesitter' },
+  config = function()
+    require('ledger').setup()
+  end,
+}
+```
+
+## Configuration
+
+<details>
+<summary>Click here to see all the options available</summary>
+
+```lua
+{
+  -- extensions that will be considered ledger files.
+  extensions = {
+    "ledger",
+    "hledger",
+    "journal",
+  },
+  -- which completion engine to use, if any
+  completion = {
+    cmp = { enabled = false },
+    coq = { enabled = false },
+  },
+}
+```
+
+</details>
+
 ## Features
 
 - Smarter completion for account names and commodities
