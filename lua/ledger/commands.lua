@@ -18,6 +18,7 @@ function LedgerCommands:setup_autocommands()
   for _, extension in pairs(config.extensions) do
     table.insert(pattern, "*." .. extension)
   end
+
   vim.api.nvim_create_autocmd("BufEnter", {
     pattern = pattern,
     group = self.augroup,
@@ -27,6 +28,23 @@ function LedgerCommands:setup_autocommands()
       local context = require("ledger.context").get()
       local has_file = context:has_file(full_path)
       if not has_file then
+        context:add_file(filename, full_path)
+      end
+      context:purge_orphan_files()
+    end,
+  })
+
+  vim.api.nvim_create_autocmd("BufWritePost", {
+    pattern = pattern,
+    group = self.augroup,
+    callback = function()
+      local filename = vim.fn.expand("%:t")
+      local full_path = vim.fn.expand("%")
+      local context = require("ledger.context").get()
+      local has_file = context:has_file(full_path)
+      if has_file then
+        context:update_file(filename, full_path)
+      else
         context:add_file(filename, full_path)
       end
     end,

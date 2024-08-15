@@ -78,11 +78,13 @@ end
 ---
 --- @param node TSNode
 --- @param source string
+--- @param filename string
 --- @param ctx ledger.Context
-function M.get_account_names_from_source(node, source, ctx)
+function M.get_account_names_from_source(node, source, filename, ctx)
   for _, match in M.query_iter(queries.account_query, node, source) do
     local account_name = vim.treesitter.get_node_text(match, source)
-    table.insert(ctx.accounts, account_name)
+    ctx.accounts[filename] = {}
+    table.insert(ctx.accounts[filename], account_name)
   end
 end
 
@@ -91,11 +93,13 @@ end
 ---
 --- @param node TSNode
 --- @param source string
+--- @param filename string
 --- @param ctx ledger.Context
-function M.get_commodities_from_source(node, source, ctx)
+function M.get_commodities_from_source(node, source, filename, ctx)
   for _, match in M.query_iter(queries.commodities_query, node, source) do
     local commodity_name = vim.treesitter.get_node_text(match, source)
-    table.insert(ctx.commodities, commodity_name)
+    ctx.accounts[filename] = {}
+    table.insert(ctx.commodities[filename], commodity_name)
   end
 end
 
