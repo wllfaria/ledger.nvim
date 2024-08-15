@@ -11,7 +11,7 @@ files for a while.
 This project intends to leverage tree-sitter to get completions, snippets
 and other cool features I've missed.
 
-This is a personal side project, so updated might be a little slow.
+This is a personal side project, so updates might be a little slow.
 
 ## Features
 

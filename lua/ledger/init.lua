@@ -12,6 +12,7 @@ Ledger.__index = Ledger
 --- @param overrides? ledger.PartialConfig
 --- @return ledger.Main
 function M.setup(overrides)
+  local logger = require("ledger.logger").setup()
   -- our configuration is a singleton, so we don't have to hold the instance,
   -- we can simply call setup and require it later.
   local config = require("ledger.config").setup(overrides or {})
@@ -31,6 +32,10 @@ function M.setup(overrides)
     return self
   end
 
+  local commands = require("ledger.commands").setup()
+  commands:create_augroup()
+  commands:setup_autocommands()
+
   local context = require("ledger.context").new(files.cwd())
   if config.completion.cmp then
     require("ledger.completion.cmp").setup()
@@ -40,6 +45,8 @@ function M.setup(overrides)
   local default = {
     context = context,
   }
+
+  logger:info("Ledger.nvim initialized")
 
   self = setmetatable(default, Ledger)
   return self

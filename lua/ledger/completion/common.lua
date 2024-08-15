@@ -42,7 +42,7 @@ end
 --- TODO: maybe we want to only be available when editing a ledger file
 --- but for now this is fine
 function M.is_available()
-  return files.has_ledger_file(files.cwd())
+  return files.is_ledger(vim.fn.expand("%"))
 end
 
 --- queries completion items from the context and calls the completion

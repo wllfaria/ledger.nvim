@@ -1,3 +1,5 @@
+local files = require("ledger.files")
+local logger = require("ledger.logger").get()
 local parser = require("ledger.parser")
 local utils = require("ledger.utils")
 
@@ -17,6 +19,42 @@ local M = {}
 --- @field commodities string[]
 local LedgerContext = {}
 LedgerContext.__index = LedgerContext
+
+--- @param path string
+function LedgerContext:has_file(path)
+  for _, source in pairs(self.sources) do
+    if source.path == path then
+      return true
+    end
+  end
+  return false
+end
+
+--- adds a new file to the sources, parsing its content and querying every
+--- needed resource
+---
+--- @param filename string
+--- @param path string
+function LedgerContext:add_file(filename, path)
+  logger:info("adding new source " .. filename)
+  local ok, contents = files.read_file(path)
+  local source = table.concat(contents, "\n")
+  local result = parser.get_parser(source)
+
+  if ok then
+    self.sources[filename] = {
+      path = path,
+      parser = result.parser,
+      tree = result.tree,
+      root = result.root,
+      source = source,
+    }
+
+    parser.get_account_names_from_source(result.root, source, self)
+    parser.get_commodities_from_source(result.root, source, self)
+    logger:info("new source added successfully")
+  end
+end
 
 --- gets completion items based on the current scope of editing and accumulates
 --- them into a table that can be used by completion engines
@@ -51,12 +89,12 @@ function M.new(path)
   --- @type ledger.Context
   local default = { sources = {}, accounts = {}, commodities = {} }
 
-  local files = require("ledger.files")
   local sources = files.read_dir_rec(path)
   for filename, filepath in pairs(sources) do
     local ok, contents = files.read_file(filepath)
     local source = table.concat(contents, "\n")
     local result = parser.get_parser(source)
+
     if ok then
       default.sources[filename] = {
         path = filepath,

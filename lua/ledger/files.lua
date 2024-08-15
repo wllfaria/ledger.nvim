@@ -16,7 +16,9 @@ function M.is_ledger(path)
   local config = require("ledger.config").setup()
   local has_match = false
   for _, extension in pairs(config.extensions) do
-    if has_match then goto continue end
+    if has_match then
+      goto continue
+    end
     has_match = path:match(extension) ~= nil and true or false
   end
   ::continue::
@@ -30,7 +32,9 @@ end
 --- @return boolean
 function M.is_directory(path)
   local ok, result = pcall(vim.uv.fs_stat, path)
-  if not ok then return false end
+  if not ok then
+    return false
+  end
   return result ~= nil and result.type == "directory" or false
 end
 
@@ -43,7 +47,9 @@ function M.should_ignore(path)
   local config = require("ledger.config").setup()
 
   for _, entry in pairs(config.default_ignored_paths) do
-    if path:match(entry) then return true end
+    if path:match(entry) then
+      return true
+    end
   end
 
   return false
@@ -64,12 +70,20 @@ function M.read_dir_rec(base_path)
 
   local function recurse(path, acc)
     local ok, entries = pcall(vim.fn.readdir, path)
-    if not ok then return end
+    if not ok then
+      return
+    end
     for _, entry in pairs(entries) do
       local full_path = vim.fs.joinpath(path, entry)
-      if M.should_ignore(full_path) then goto continue end
-      if M.is_directory(full_path) then recurse(full_path, acc) end
-      if M.is_ledger(entry) and not M.is_directory(full_path) then acc[entry] = full_path end
+      if M.should_ignore(full_path) then
+        goto continue
+      end
+      if M.is_directory(full_path) then
+        recurse(full_path, acc)
+      end
+      if M.is_ledger(entry) and not M.is_directory(full_path) then
+        acc[entry] = full_path
+      end
       ::continue::
     end
   end
@@ -87,7 +101,9 @@ end
 --- @return boolean, string[]?
 function M.read_file(filename)
   local ok, lines = pcall(vim.fn.readfile, filename)
-  if not ok then return false, nil end
+  if not ok then
+    return false, nil
+  end
   return true, lines
 end
 
@@ -99,18 +115,76 @@ end
 --- @return boolean
 function M.has_ledger_file(path)
   local ok, entries = pcall(vim.fn.readdir, path)
-  if not ok then return false end
+  if not ok then
+    return false
+  end
 
   for _, entry in ipairs(entries) do
-    if M.is_ledger(entry) then return true end
+    if M.is_ledger(entry) then
+      return true
+    end
   end
 
   return false
 end
 
+--- creates a directory in the given path if possible
+---
+--- @param path string
+function M.mkdir(path)
+  vim.fn.mkdir(path, "p")
+end
+
+--- creates a file in the given path if possible
+---
+--- @param path string
+--- @return boolean
+function M.mkfile(path)
+  local ok, exist = pcall(vim.uv.fs_stat, path)
+  if not ok then
+    error("failed to stat data path")
+  end
+  if not exist then
+    local fd = io.open(path, "w+")
+    if not fd then
+      return false
+    end
+    fd:write("")
+    fd:close()
+  end
+  return true
+end
+
+--- checks if a path exists, returns true if it exists, or false if it
+--- doens't exist or if fs_stat fails for any reason.
+---
+--- @param path string
+function M.file_exist(path)
+  local ok, exist = pcall(vim.uv.fs_stat, path)
+  if not ok then
+    return false
+  end
+  if not exist then
+    return false
+  end
+  return true
+end
+
+--- removes a file if it exists, do nothing otherwise
+---
+--- @param path string
+function M.rmfile(path)
+  local file_exist = M.file_exist(path)
+  if file_exist then
+    vim.uv.fs_unlink(path)
+  end
+end
+
 --- returns the current working directory
 ---
 --- @return string
-function M.cwd() return vim.fn.getcwd() end
+function M.cwd()
+  return vim.fn.getcwd()
+end
 
 return M
