@@ -4,15 +4,6 @@ Neovim integration for ledger files, powered by tree-sitter
 
 ## Motivation
 
-I'm adept to plain-text accounting, and I use ledger to keep track of my
-finances, but I've been wanting some better neovim integration for ledger
-files for a while.
-
-This project intends to leverage tree-sitter to get completions, snippets
-and other cool features I've missed.
-
-This is a personal side project, so updates might be a little slow.
-
 I’m a big fan of plain-text accounting and use Ledger to track my finances.
 However, I’ve been wanting better Neovim integration for Ledger files for
 some time.
@@ -100,7 +91,7 @@ to your liking.
     LSP diagnostic, populating your workspace diagnostics.
   - `strict` ensures that undeclared commodities and accounts are treated as errors
     rather than warnings.
-  
+
 </details>
 
 ## Features
