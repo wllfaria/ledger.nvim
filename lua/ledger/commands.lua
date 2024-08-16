@@ -42,6 +42,11 @@ function LedgerCommands:setup_autocommands()
       local full_path = vim.fn.expand("%")
       local context = require("ledger.context").get()
       context:add_file(filename, full_path)
+
+      if config.diagnostics:is_enabled() then
+        local diagnostics = require("ledger.diagnostics")
+        diagnostics.get_diagnostics()
+      end
     end,
   })
 end

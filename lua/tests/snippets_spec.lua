@@ -1,5 +1,5 @@
+local converter = require("ledger.snippets.template_converter")
 local luasnip = require("ledger.snippets.luasnip")
-local native = require("ledger.snippets.native")
 
 local template = {
   { pre = "", text = "YYYY-MM-DD", insert = true, post = " " },
@@ -12,7 +12,7 @@ describe("snippets", function()
   it("converts from common format to a valid vim.snippet.expand format", function()
     local expected = "${1:YYYY-MM-DD} ${2:*} ${3:Payee}\n\t${4:Account}"
 
-    local result = native.template_to_builtin(template)
+    local result = converter.template_to_builtin(template)
 
     assert.are.same(result, expected)
   end)

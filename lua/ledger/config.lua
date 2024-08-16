@@ -31,7 +31,6 @@ local M = {}
 --- @field diagnostics ledger.Diagnostics?
 
 --- @class ledger.Diagnostics
---- @field virt_text boolean
 --- @field lsp_diagnostics boolean
 --- @field strict boolean
 
@@ -90,7 +89,7 @@ end
 ---
 --- @return boolean
 function LedgerConfigDiagnostics:is_enabled()
-  if self.virt_text then
+  if self.lsp_diagnostics then
     return true
   end
   return false
