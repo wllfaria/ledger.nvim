@@ -16,12 +16,10 @@ function M.is_ledger(path)
   local config = require("ledger.config").get()
   local has_match = false
   for _, extension in pairs(config.extensions) do
-    if has_match then
-      goto continue
+    if not has_match then
+      has_match = path:match(extension) ~= nil and true or false
     end
-    has_match = path:match(extension) ~= nil and true or false
   end
-  ::continue::
   return has_match
 end
 
@@ -75,16 +73,14 @@ function M.read_dir_rec(base_path)
     end
     for _, entry in pairs(entries) do
       local full_path = vim.fs.joinpath(path, entry)
-      if M.should_ignore(full_path) then
-        goto continue
+      if not M.should_ignore(full_path) then
+        if M.is_directory(full_path) then
+          recurse(full_path, acc)
+        end
+        if M.is_ledger(entry) and not M.is_directory(full_path) then
+          acc[entry] = full_path
+        end
       end
-      if M.is_directory(full_path) then
-        recurse(full_path, acc)
-      end
-      if M.is_ledger(entry) and not M.is_directory(full_path) then
-        acc[entry] = full_path
-      end
-      ::continue::
     end
   end
 
