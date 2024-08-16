@@ -1,6 +1,12 @@
 # Ledger nvim
 
+<div align="center">
+
 Neovim integration for ledger files, powered by tree-sitter
+
+</div>
+
+<img src="./extras/ledger_nvim_showcase.png" />
 
 ## Motivation
 
