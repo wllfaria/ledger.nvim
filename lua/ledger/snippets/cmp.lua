@@ -3,9 +3,6 @@ local template_converter = require("ledger.snippets.template_converter")
 --- @class CmpSnippetCompletionSource
 local M = {}
 
-local LedgerSnippetCmpSource = {}
-LedgerSnippetCmpSource.__index = LedgerSnippetCmpSource
-
 --- @param snippets ledger.SnippetList
 --- @return lsp.CompletionItem[]
 function M.new(snippets)

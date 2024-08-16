@@ -24,7 +24,7 @@ function M.new()
   return setmetatable({}, LedgerCmp)
 end
 
-function LedgerCmp:is_available()
+function LedgerCmp.is_available()
   return common.is_available()
 end
 
@@ -32,7 +32,7 @@ end
 --- specify
 ---
 ---@return string
-function LedgerCmp:get_debug_name()
+function LedgerCmp.get_debug_name()
   return "ledger.nvim"
 end
 

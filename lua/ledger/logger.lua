@@ -43,26 +43,26 @@ end
 ---
 --- @param level string
 --- @return string
-function LedgerLogger:get_prefix(level)
+function LedgerLogger.get_prefix(level)
   local timestamp = os.date("%Y-%m-%d %H:%M:%S")
   return "[" .. timestamp .. "] " .. level .. " "
 end
 
 --- @param message string
 function LedgerLogger:info(message)
-  local prefix = self:get_prefix("[INFO]")
+  local prefix = self.get_prefix("[INFO]")
   self:log(prefix .. message .. "\n")
 end
 
 --- @param message string
 function LedgerLogger:error(message)
-  local prefix = self:get_prefix("[ERROR]")
+  local prefix = self.get_prefix("[ERROR]")
   self:log(prefix .. message .. "\n")
 end
 
 --- @param message string
 function LedgerLogger:warn(message)
-  local prefix = self:get_prefix("[WARN]")
+  local prefix = self.get_prefix("[WARN]")
   self:log(prefix .. message .. "\n")
 end
 

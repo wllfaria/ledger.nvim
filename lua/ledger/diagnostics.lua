@@ -22,11 +22,9 @@ function M.get_missing_accounts()
   for filename, postings in pairs(context.postings) do
     for _, posting in pairs(postings) do
       local account_name = posting.account.text
-      local has_commodity = false
 
       for _, accounts in pairs(context.accounts) do
-        has_commodity = vim.tbl_contains(accounts, account_name)
-        if has_commodity then
+        if vim.tbl_contains(accounts, account_name) then
           goto continue
         end
       end
@@ -63,11 +61,9 @@ function M.get_missing_commodities()
       end
 
       local commodity_name = posting.commodity.text
-      local has_commodity = false
 
       for _, commodities in pairs(context.commodities) do
-        has_commodity = vim.tbl_contains(commodities, commodity_name)
-        if has_commodity then
+        if vim.tbl_contains(commodities, commodity_name) then
           goto continue
         end
       end
