@@ -22,23 +22,24 @@ function M.get_missing_accounts()
   for filename, postings in pairs(context.postings) do
     for _, posting in pairs(postings) do
       local account_name = posting.account.text
+      local has_account = false
 
       for _, accounts in pairs(context.accounts) do
         if vim.tbl_contains(accounts, account_name) then
-          goto continue
+          has_account = true
         end
       end
 
-      if not missing_accounts[filename] then
-        missing_accounts[filename] = {}
+      if not has_account then
+        if not missing_accounts[filename] then
+          missing_accounts[filename] = {}
+        end
+        table.insert(missing_accounts[filename], {
+          filename = filename,
+          text = account_name,
+          range = posting.account.range,
+        })
       end
-      table.insert(missing_accounts[filename], {
-        filename = filename,
-        text = account_name,
-        range = posting.account.range,
-      })
-
-      ::continue::
     end
   end
 

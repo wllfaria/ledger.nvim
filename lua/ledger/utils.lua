@@ -35,12 +35,12 @@ function M.tbl_merge(behavior, table_a, table_b)
       local has_key = result[key] ~= nil
       if has_key and behavior == "error" then
         error("duplicate key (" .. key .. ") on right side table")
-      elseif has_key and behavior == "keep" then
-        goto continue
+      elseif has_key and behavior == "force" then
+        result[key] = value
+      elseif not has_key then
+        result[key] = value
       end
-      result[key] = value
     end
-    ::continue::
   end
 
   return result
