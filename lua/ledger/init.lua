@@ -37,8 +37,17 @@ function M.setup(overrides)
   commands:setup_autocommands()
 
   local context = require("ledger.context").new(files.cwd())
-  if config.completion.cmp then
-    require("ledger.completion.cmp").setup()
+  if config.completion:is_enabled() then
+    require("ledger.completion").setup()
+  end
+
+  if config.snippets:is_enabled() then
+    require("ledger.snippets").setup()
+  end
+
+  if config.snippets.cmp.enabled and not config.completion:is_enabled() then
+    error("cmp is registered as a snippet source but cmp is not enabled as a completion engine")
+    return {}
   end
 
   --- @type ledger.Main

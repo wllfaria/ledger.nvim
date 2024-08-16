@@ -113,11 +113,16 @@ function LedgerContext:current_scope_completions()
   local completion_items = {}
   local accounts = {}
   local commodities = {}
+
   for _, file_accounts in pairs(self.accounts) do
-    accounts = utils.tbl_merge("force", accounts, file_accounts)
+    for _, account in pairs(file_accounts) do
+      table.insert(accounts, account)
+    end
   end
   for _, file_commodities in pairs(self.commodities) do
-    commodities = utils.tbl_merge("force", accounts, file_commodities)
+    for _, commodity in pairs(file_commodities) do
+      table.insert(commodities, commodity)
+    end
   end
 
   if current_scope == parser.scopes.Account then

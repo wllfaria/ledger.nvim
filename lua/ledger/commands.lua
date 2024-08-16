@@ -13,7 +13,7 @@ function LedgerCommands:create_augroup()
 end
 
 function LedgerCommands:setup_autocommands()
-  local config = require("ledger.config").setup()
+  local config = require("ledger.config").get()
   local pattern = {}
   for _, extension in pairs(config.extensions) do
     table.insert(pattern, "*." .. extension)

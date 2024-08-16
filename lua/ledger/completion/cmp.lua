@@ -1,4 +1,4 @@
-local common = require("ledger.completion.common")
+local common = require("ledger.completion")
 
 ---@class Cmp
 ---@field register_source fun(name: string, src: CmpCompletionSource)
@@ -13,8 +13,12 @@ local common = require("ledger.completion.common")
 --- @field registered_source boolean?
 local M = {}
 
+--- @class CmpCompletionSource
+--- @field snippets lsp.CompletionItem[]
 local LedgerCmp = {}
 LedgerCmp.__index = LedgerCmp
+
+local instance
 
 function M.new()
   return setmetatable({}, LedgerCmp)
@@ -42,7 +46,17 @@ end
 ---@param _ cmp.SourceCompletionApiParams
 ---@param callback function
 function LedgerCmp:complete(_, callback)
-  common.complete(callback)
+  --- this function injects snippets into the completion list
+  --- when cmp is enabled as a snippet source
+  ---
+  --- @param completion_items lsp.CompletionItem[]
+  local insert_snippets = function(completion_items)
+    for _, snippet in pairs(self.snippets) do
+      table.insert(completion_items, snippet)
+    end
+  end
+
+  common.complete(callback, insert_snippets)
 end
 
 function M.setup()
@@ -56,8 +70,15 @@ function M.setup()
     return
   end
 
-  cmp.register_source("ledger", M.new())
+  instance = M.new()
+  cmp.register_source("ledger", instance)
   M.registered_source = true
+end
+
+--- @param snippets ledger.SnippetList
+function M.enable_snippets(snippets)
+  local cmp_snippets = require("ledger.snippets.cmp").new(snippets)
+  instance.snippets = cmp_snippets
 end
 
 return M

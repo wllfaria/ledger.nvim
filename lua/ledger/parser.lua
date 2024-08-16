@@ -51,7 +51,6 @@ function M.find_current_scope()
   local node_type = node_at_cursor:type()
 
   local scope
-
   if node_type == "account" then
     scope = M.scopes.Account
   elseif node_type == "commodity" then
@@ -81,9 +80,9 @@ end
 --- @param filename string
 --- @param ctx ledger.Context
 function M.get_account_names_from_source(node, source, filename, ctx)
+  ctx.accounts[filename] = {}
   for _, match in M.query_iter(queries.account_query, node, source) do
     local account_name = vim.treesitter.get_node_text(match, source)
-    ctx.accounts[filename] = {}
     table.insert(ctx.accounts[filename], account_name)
   end
 end
@@ -96,9 +95,9 @@ end
 --- @param filename string
 --- @param ctx ledger.Context
 function M.get_commodities_from_source(node, source, filename, ctx)
+  ctx.commodities[filename] = {}
   for _, match in M.query_iter(queries.commodities_query, node, source) do
     local commodity_name = vim.treesitter.get_node_text(match, source)
-    ctx.commodities[filename] = {}
     table.insert(ctx.commodities[filename], commodity_name)
   end
 end

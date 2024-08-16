@@ -1,20 +1,19 @@
+local M = {}
+
+function M.setup()
+  local config = require("ledger.config").get()
+  if config.completion.cmp.enabled then
+    require("ledger.completion.cmp").setup()
+  end
+end
+
 local context = require("ledger.context").get()
 local files = require("ledger.files")
-
-local M = {}
+local logger = require("ledger.logger").get()
 
 --- @class CompletionList
 --- @field isIncomplete boolean
---- @field items CompletionItem[]
-
---- @class CompletionItem
---- @field label string
---- @field detail string?
---- @field kind integer? -- CompletionItemKind?
---- @field deprecated boolean?
---- @field sortText string?
---- @field insertText string?
---- @field cmp CmpCompletionExtension?
+--- @field items lsp.CompletionItem[]
 
 --- @class CmpCompletionExtension
 --- @field kind_text string
@@ -23,12 +22,6 @@ local M = {}
 --- @class ledger.CompletionCommon
 local LedgerCompletion = {}
 LedgerCompletion.__index = LedgerCompletion
-
---- we always complete as Values, this seemingly random arbitrary value
---- comes from the LSP specification
-local completion_item_kind = {
-  VALUE = 12,
-}
 
 --- returns a new completion common
 function M.new()
@@ -50,21 +43,28 @@ end
 --- scope of editing
 ---
 ---@param callback function
-function M.complete(callback)
+---@param middleware fun(completion_items: table)?
+function M.complete(callback, middleware)
   local completions = context:current_scope_completions()
+
+  logger:info("fetched " .. #completions .. " completions")
 
   local completion_items = {}
 
   for _, item in ipairs(completions) do
     print(item)
-    --- @type CompletionItem
+    --- @type lsp.CompletionItem
     local completion = {
       label = item,
-      kind = completion_item_kind.VALUE,
+      kind = vim.lsp.protocol.CompletionItemKind.Value,
       sortText = item,
       insertText = item,
     }
     table.insert(completion_items, completion)
+  end
+
+  if middleware ~= nil then
+    middleware(completion_items)
   end
 
   return callback(completion_items)

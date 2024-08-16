@@ -46,4 +46,12 @@ function M.tbl_merge(behavior, table_a, table_b)
   return result
 end
 
+--- returns a formatted string of today as YYYY-MM-DD
+---
+--- @return string
+function M.today_str()
+  local date = os.date("%Y-%m-%d")
+  return date .. ""
+end
+
 return M

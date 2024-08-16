@@ -13,7 +13,7 @@ local M = {}
 --- @param path string
 --- @return boolean
 function M.is_ledger(path)
-  local config = require("ledger.config").setup()
+  local config = require("ledger.config").get()
   local has_match = false
   for _, extension in pairs(config.extensions) do
     if has_match then
@@ -44,7 +44,7 @@ end
 --- @param path string
 --- @return boolean
 function M.should_ignore(path)
-  local config = require("ledger.config").setup()
+  local config = require("ledger.config").get()
 
   for _, entry in pairs(config.default_ignored_paths) do
     if path:match(entry) then
