@@ -14,10 +14,20 @@ local M = {}
 
 --- @alias SourceMap table<string, SourcePair>
 
+--- @class ledger.PostingEntry
+--- @field text string
+--- @field range TSRange
+
+--- @class ledger.Posting[]
+--- @field account ledger.PostingEntry
+--- @field commodity ledger.PostingEntry?
+--- @field quantity ledger.PostingEntry?
+
 --- @class ledger.Context
 --- @field sources SourceMap
 --- @field accounts table<string, string[]>
 --- @field commodities table<string, string[]>
+--- @field postings table<string, ledger.Posting[]>
 local LedgerContext = {}
 LedgerContext.__index = LedgerContext
 
@@ -57,6 +67,8 @@ function LedgerContext:add_file(filename, path)
 
     parser.get_account_names_from_source(result.root, source, filename, self)
     parser.get_commodities_from_source(result.root, source, filename, self)
+    parser.get_postings_from_source(result.root, source, filename, self)
+
     logger:info("new source added successfully")
   end
 end
@@ -71,36 +83,6 @@ function LedgerContext:purge_orphan_files()
       self.accounts[source.filename] = nil
       self.commodities[source.filename] = nil
     end
-  end
-end
-
---- updates a file on the context by re-parsing its content and extracting
---- the accounts, commodities and whatever is needed to override existing
---- ones
----
---- @param filename string
---- @param path string
-function LedgerContext:update_file(filename, path)
-  logger:info("updating source " .. filename)
-
-  local ok, contents = files.read_file(path)
-  local source = table.concat(contents, "\n")
-  local result = parser.get_parser(source)
-
-  if ok then
-    self.sources[filename] = {
-      path = path,
-      filename = filename,
-      parser = result.parser,
-      tree = result.tree,
-      root = result.root,
-      source = source,
-    }
-
-    parser.get_account_names_from_source(result.root, source, filename, self)
-    parser.get_commodities_from_source(result.root, source, filename, self)
-
-    logger:info("source updated successfully")
   end
 end
 
@@ -119,6 +101,7 @@ function LedgerContext:current_scope_completions()
       table.insert(accounts, account)
     end
   end
+
   for _, file_commodities in pairs(self.commodities) do
     for _, commodity in pairs(file_commodities) do
       table.insert(commodities, commodity)
@@ -145,30 +128,14 @@ end
 --- @return ledger.Context
 function M.new(path)
   --- @type ledger.Context
-  local default = { sources = {}, accounts = {}, commodities = {} }
+  local default = { sources = {}, accounts = {}, commodities = {}, postings = {} }
+  instance = setmetatable(default, LedgerContext)
 
   local sources = files.read_dir_rec(path)
   for filename, filepath in pairs(sources) do
-    local ok, contents = files.read_file(filepath)
-    local source = table.concat(contents, "\n")
-    local result = parser.get_parser(source)
-
-    if ok then
-      default.sources[filename] = {
-        path = filepath,
-        filename = filename,
-        parser = result.parser,
-        tree = result.tree,
-        root = result.root,
-        source = source,
-      }
-
-      parser.get_account_names_from_source(result.root, source, filename, default)
-      parser.get_commodities_from_source(result.root, source, filename, default)
-    end
+    instance:add_file(filename, filepath)
   end
 
-  instance = setmetatable(default, LedgerContext)
   return instance
 end
 

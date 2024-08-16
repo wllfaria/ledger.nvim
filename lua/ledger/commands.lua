@@ -41,12 +41,7 @@ function LedgerCommands:setup_autocommands()
       local filename = vim.fn.expand("%:t")
       local full_path = vim.fn.expand("%")
       local context = require("ledger.context").get()
-      local has_file = context:has_file(full_path)
-      if has_file then
-        context:update_file(filename, full_path)
-      else
-        context:add_file(filename, full_path)
-      end
+      context:add_file(filename, full_path)
     end,
   })
 end

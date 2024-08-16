@@ -18,4 +18,14 @@ M.commodities_query = vim.treesitter.query.parse(
       (commodity) @commodity_name)))]]
 )
 
+M.posting_query = vim.treesitter.query.parse(
+  "ledger",
+  [[
+(posting
+  (account) @account
+  (amount
+    (commodity)? @commodity
+    (quantity)? @quantity)?) @posting]]
+)
+
 return M

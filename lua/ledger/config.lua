@@ -27,6 +27,13 @@ local M = {}
 --- @field extensions string[]?
 --- @field completion ledger.Completion?
 --- @field snippets ledger.Snippet?
+--- @field keymaps ledger.Keymaps?
+--- @field diagnostics ledger.Diagnostics?
+
+--- @class ledger.Diagnostics
+--- @field virt_text boolean
+--- @field lsp_diagnostics boolean
+--- @field strict boolean
 
 --- @class ledger.Config
 --- @field extensions string[]
@@ -34,6 +41,7 @@ local M = {}
 --- @field completion ledger.Completion
 --- @field snippets ledger.Snippet
 --- @field keymaps ledger.Keymaps
+--- @field diagnostics ledger.Diagnostics
 local LedgerConfig = {}
 LedgerConfig.__index = LedgerConfig
 
@@ -44,6 +52,12 @@ LedgerConfigSnippets.__index = LedgerConfigSnippets
 --- @class ledger.Completion
 local LedgerConfigCompletion = {}
 LedgerConfigCompletion.__index = LedgerConfigCompletion
+
+--- @class ledger.Diagnostics
+local LedgerConfigDiagnostics = {}
+LedgerConfigDiagnostics.__index = LedgerConfigDiagnostics
+
+--- @class ledger.
 
 --- checks if any of the completion providers are enabled and return
 --- true/false
@@ -71,6 +85,17 @@ function LedgerConfigSnippets:is_enabled()
   return false
 end
 
+--- checks if any of the existing snippet providers are available and
+--- return true/false
+---
+--- @return boolean
+function LedgerConfigDiagnostics:is_enabled()
+  if self.virt_text then
+    return true
+  end
+  return false
+end
+
 function LedgerConfig.__tostring()
   return "<LedgerConfig>"
 end
@@ -90,6 +115,11 @@ local function get_default_config()
     default_ignored_paths = {
       ".git",
     },
+    diagnostics = setmetatable({
+      virt_text = true,
+      lsp_diagnostics = true,
+      strict = true,
+    }, LedgerConfigDiagnostics),
     snippets = setmetatable({
       native = { enabled = false },
       cmp = { enabled = true },

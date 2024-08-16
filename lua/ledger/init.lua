@@ -46,8 +46,12 @@ function M.setup(overrides)
   end
 
   if config.snippets.cmp.enabled and not config.completion:is_enabled() then
-    error("cmp is registered as a snippet source but cmp is not enabled as a completion engine")
+    print("cmp is registered as a snippet source but cmp is not enabled as a completion engine")
     return {}
+  end
+
+  if config.diagnostics:is_enabled() then
+    require("ledger.diagnostics").get_diagnostics()
   end
 
   --- @type ledger.Main
