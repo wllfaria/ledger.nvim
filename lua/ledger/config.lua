@@ -115,9 +115,8 @@ local function get_default_config()
       ".git",
     },
     diagnostics = setmetatable({
-      virt_text = true,
       lsp_diagnostics = true,
-      strict = true,
+      strict = false,
     }, LedgerConfigDiagnostics),
     snippets = setmetatable({
       native = { enabled = false },
@@ -133,6 +132,7 @@ local function get_default_config()
       },
     },
   }
+
   return default_config
 end
 

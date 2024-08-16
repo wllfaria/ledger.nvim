@@ -22,6 +22,7 @@ Add the following snippet to your lazy configuration!
 ```lua
 {
   'wllfaria/ledger.nvim',
+  -- tree sitter needs to be loaded before ledger.nvim loads
   dependencies = { 'nvim-treesitter/nvim-treesitter' },
   config = function()
     require('ledger').setup()
@@ -31,31 +32,53 @@ Add the following snippet to your lazy configuration!
 
 ## Configuration
 
-<details>
-<summary>Click here to see all the options available</summary>
+Below are the default configurations for ledger.nvim, you can set anything
+to your liking.
 
 ```lua
 {
-  -- extensions that will be considered ledger files.
   extensions = {
     "ledger",
     "hledger",
     "journal",
   },
-  -- which completion engine to use, if any
   completion = {
-    cmp = { enabled = false },
-    coq = { enabled = false },
+    cmp = { enabled = true },
   },
+  snippets = {
+    cmp = { enabled = true },
+    luasnip = { enabled = false },
+    native = { enabled = false },
+  },
+  keymaps = {
+    snippets = {
+      new_posting = { "tt" },
+      new_account = { "acc" },
+      new_posting_today = { "td" },
+      new_commodity = { "cm" },
+    },
+  },
+  diagnostics = {
+    lsp_diagnostics = true,
+    strict = false,
+  }
 }
 ```
+
+<details>
+<summary>Expand to see each option in detail</summary>
+
+| option | description |
+| ------ | ----------- |
+| extensions | which extensions should be considered ledger files |
+| completion | which completion engine to display account and commodity completions |
 
 </details>
 
 ## Features
 
 - Smarter completion for account names and commodities
-- a bunch of other things but I still have to code them
+-
 
 ## Related projects
 
