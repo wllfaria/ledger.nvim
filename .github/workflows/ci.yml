@@ -38,6 +38,10 @@ jobs:
             git clone --depth 1 https://github.com/L3MON4D3/LuaSnip ~/.local/share/nvim/site/pack/vendor/start/LuaSnip
 
             ln -s "$(pwd)" ~/.local/share/nvim/site/pack/vendor/start
+      - name: Install Ledger Tree-sitter parser
+        run: |
+          export PATH="${PWD}/_neovim/bin:${PATH}"
+          nvim --headless -c 'TSInstallSync ledger' -c 'qa'
       - name: Run tests
         run: |
           export PATH="${PWD}/_neovim/bin:${PATH}"

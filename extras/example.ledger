@@ -1,0 +1,9 @@
+account Assets:Checking
+account Expenses:Groceries
+
+commodity BRL
+
+2024-08-16 * Buying groceries from the store
+  Assets:Checking
+  Expenses:Groceries            BRL 133.7
+  Expenses:Pizza                USD 13.37

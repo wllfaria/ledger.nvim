@@ -6,7 +6,7 @@ Neovim integration for ledger files, powered by tree-sitter
 
 </div>
 
-<img src="./extras/ledger_nvim_showcase.png" />
+<img src="./extras/example.gif" />
 
 ## Motivation
 

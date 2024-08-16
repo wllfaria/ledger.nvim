@@ -2,7 +2,6 @@ describe("parser", function()
   local parser = require("ledger.parser")
 
   before_each(function()
-    require("nvim-treesitter.install").ensure_installed("ledger")
     vim.cmd.enew()
     vim.bo.filetype = "ledger"
   end)
