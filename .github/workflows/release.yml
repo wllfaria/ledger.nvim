@@ -1,0 +1,36 @@
+name: Release Workflow
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: checkout to main
+        run: git checkout main
+
+      - name: Generate CHANGELOG using GitHub Action
+        id: changelog
+        uses: TriPSs/conventional-changelog-action@v5
+        with:
+          version-file: version.toml
+          output: CHANGELOG.md
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.changelog.outputs.tag }}
+          body: ${{ steps.changelog.outputs.clean_changelog }}
+          name: ledger.nvim ${{ steps.changelog.outputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
