@@ -1,4 +1,13 @@
-# 0.1.0 (2024-08-17)
+# [0.2.0](https://github.com/wllfaria/ledger.nvim/compare/v0.1.0...v0.2.0) (2024-08-20)
+
+
+### Features
+
+* adding a command runner for ledger reports ([803f432](https://github.com/wllfaria/ledger.nvim/commit/803f43266acf932bb02b169c091d28474250ad08))
+
+
+
+# [0.1.0](https://github.com/wllfaria/ledger.nvim/compare/368e02a0dae1d975f8eff856641ae38311dab921...v0.1.0) (2024-08-17)
 
 
 ### Bug Fixes
