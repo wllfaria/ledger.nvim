@@ -63,6 +63,7 @@ to your liking.
       new_posting_today = { "td" },
       new_commodity = { "cm" },
     },
+    reports = {}
   },
   diagnostics = {
     lsp_diagnostics = true,
@@ -92,6 +93,19 @@ to your liking.
   - The `snippets` section defines keymaps or triggers for snippets. If you're using
     native as your snippet engine, this will set the actual keymap in Neovim. You can
     disable a snippet by either removing it from the list or removing its triggers.
+  - The `reports` section defines keymaps for running ledger reports, it will define
+    a keymap that runs the given ledger command string. Techinically, anything that
+    outputs to stdout could be used here.
+
+    Define your own reports by filling in the reports keymaps like this:
+    ```lua
+    keymaps = {
+      reports = {
+        { key = "<leader>bal", name = "Balance", command = "ledger --strict -f main.ledger bal" },
+        { key = "<leader>bud", name = "Budget", command = "ledger --strict -f main.ledger budget" },
+      }
+    }
+    ```
 - The `diagnostics` field lets you customize how diagnostics work in Ledger:
   - `lsp_diagnostics` sets diagnostics using vim.diagnostic.set, so it works like an
     LSP diagnostic, populating your workspace diagnostics.
@@ -105,6 +119,7 @@ to your liking.
 - Autocompletion for account names, powered by nvim-cmp
 - Snippets for common actions (creating postings, accounts, commodities, etc.)
 - Diagnostics for undeclared commodities and accounts
+- Running user defined reports without leaving neovim
 - And a few other things that I still have to code
 
 ## Related projects

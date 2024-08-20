@@ -57,24 +57,26 @@ function M.get_missing_commodities()
 
   for filename, postings in pairs(context.postings) do
     for _, posting in pairs(postings) do
-      local commodity_name = posting.commodity.text
-      local has_commodity = false
+      if posting.commodity then
+        local commodity_name = posting.commodity.text
+        local has_commodity = false
 
-      for _, accounts in pairs(context.commodities) do
-        if vim.tbl_contains(accounts, commodity_name) then
-          has_commodity = true
+        for _, accounts in pairs(context.commodities) do
+          if vim.tbl_contains(accounts, commodity_name) then
+            has_commodity = true
+          end
         end
-      end
 
-      if not has_commodity then
-        if not missing_accounts[filename] then
-          missing_accounts[filename] = {}
+        if not has_commodity then
+          if not missing_accounts[filename] then
+            missing_accounts[filename] = {}
+          end
+          table.insert(missing_accounts[filename], {
+            filename = filename,
+            text = commodity_name,
+            range = posting.account.range,
+          })
         end
-        table.insert(missing_accounts[filename], {
-          filename = filename,
-          text = commodity_name,
-          range = posting.account.range,
-        })
       end
     end
   end

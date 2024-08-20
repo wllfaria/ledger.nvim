@@ -6,8 +6,18 @@ local M = {}
 --- @field new_posting_today string[]
 --- @field new_commodity string[]
 
+--- @class ledger.ReportKeymap
+--- @field name string
+--- @field key string
+--- @field command string
+
 --- @class ledger.Keymaps
 --- @field snippets ledger.SnippetKeymaps
+--- @field reports ledger.ReportKeymap[]
+
+--- @class ledger.PartialKeymaps
+--- @field snippets? ledger.SnippetKeymaps
+--- @field reports? ledger.ReportKeymap[]
 
 --- @class ledger.CompletionSource
 --- @field enabled boolean
@@ -27,7 +37,7 @@ local M = {}
 --- @field extensions string[]?
 --- @field completion ledger.Completion?
 --- @field snippets ledger.Snippet?
---- @field keymaps ledger.Keymaps?
+--- @field keymaps ledger.PartialKeymaps?
 --- @field diagnostics ledger.Diagnostics?
 
 --- @class ledger.Diagnostics
@@ -43,6 +53,9 @@ local M = {}
 --- @field diagnostics ledger.Diagnostics
 local LedgerConfig = {}
 LedgerConfig.__index = LedgerConfig
+
+--- @type ledger.Config
+local instance = nil
 
 --- @class ledger.Snippet
 local LedgerConfigSnippets = {}
@@ -130,14 +143,22 @@ local function get_default_config()
         new_posting_today = { "td" },
         new_commodity = { "cm" },
       },
+      reports = {},
     },
   }
 
   return default_config
 end
 
---- @type ledger.Config
-local instance = nil
+--- set keymaps for running reports
+function LedgerConfig:set_keymaps()
+  local commands = require("ledger.commands").setup()
+  for _, keymap in pairs(self.keymaps.reports) do
+    vim.keymap.set("n", keymap.key, function()
+      commands:run_report(keymap.command)
+    end)
+  end
+end
 
 --- Config is a singleton, allowing us to call `get` as many times as we
 --- want and always getting the same instance, so we don't have to pass
@@ -150,6 +171,7 @@ function M.setup(overrides)
     local default = get_default_config()
     local with_overrides = vim.tbl_deep_extend("force", default, overrides or {})
     instance = setmetatable(with_overrides, LedgerConfig)
+    instance:set_keymaps()
   end
   return instance
 end

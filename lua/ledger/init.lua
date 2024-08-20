@@ -33,7 +33,7 @@ function M.setup(overrides)
   end
 
   local commands = require("ledger.commands").setup()
-  commands:create_augroup()
+  commands:create_augroups()
   commands:setup_autocommands()
 
   local context = require("ledger.context").new(files.cwd())
