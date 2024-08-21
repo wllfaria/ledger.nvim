@@ -4,7 +4,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @class ledger.parser
 --- @field get_parser fun(source: string): TSSource
 --- @field find_current_scope fun(): Scope
---- @field query_iter fun(query: vim.treesitter.Query, node: TSNode, source: string):
+--- @field query_iter fun(query: vim.treesitter.Query, node: TSNode, source: string): fun(end_line: integer|nil):integer, TSNode, vim.treesitter.query.TSMetadata, TSQueryMatch
 --- @field get_account_names_from_source fun(node: TSNode, source: string, filename: string, ctx: ledger.Context)
 --- @field get_commodities_from_source fun(node: TSNode, source: string, filename: string, ctx: ledger.Context)
 local M = {}
@@ -142,13 +142,13 @@ function M.get_postings_from_source(node, source, filename, ctx)
 
     if child_count > 0 then
       --- @type TSNode
-      local account, amount = unpack(match:named_children(0))
+      local account, amount = unpack(match:named_children())
       local account_text = vim.treesitter.get_node_text(account, source)
       posting.account = { text = account_text, range = M.get_node_range(account) }
 
       if amount then
         --- @type TSNode, TSNode
-        local commodity, quantity = unpack(amount:named_children(0))
+        local commodity, quantity = unpack(amount:named_children())
         local commodity_text = vim.treesitter.get_node_text(commodity, source)
         posting.commodity = { text = commodity_text, range = M.get_node_range(commodity) }
 
