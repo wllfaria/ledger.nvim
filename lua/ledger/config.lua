@@ -1,5 +1,8 @@
 local M = {}
 
+--- @class ledger.Tui
+--- @field enabled boolean
+
 --- @class ledger.SnippetKeymaps
 --- @field new_account string[]
 --- @field new_posting string[]
@@ -11,9 +14,14 @@ local M = {}
 --- @field key string
 --- @field command string
 
+--- @class ledger.TuiKeymaps
+--- @field initialize string[]
+--- @field shutdown string[]
+
 --- @class ledger.Keymaps
 --- @field snippets ledger.SnippetKeymaps
 --- @field reports ledger.ReportKeymap[]
+--- @field tui ledger.TuiKeymaps
 
 --- @class ledger.PartialKeymaps
 --- @field snippets? ledger.SnippetKeymaps
@@ -51,6 +59,7 @@ local M = {}
 --- @field snippets ledger.Snippet
 --- @field keymaps ledger.Keymaps
 --- @field diagnostics ledger.Diagnostics
+--- @field tui ledger.Tui
 local LedgerConfig = {}
 LedgerConfig.__index = LedgerConfig
 
@@ -144,6 +153,13 @@ local function get_default_config()
         new_commodity = { "cm" },
       },
       reports = {},
+      tui = {
+        initialize = { "<leader>tui" },
+        shutdown = { "<leader>tud" },
+      },
+    },
+    tui = {
+      enabled = true,
     },
   }
 
@@ -158,6 +174,13 @@ function LedgerConfig:set_keymaps()
       commands:run_report(keymap.command)
     end)
   end
+
+  if not self.tui.enabled then
+    return
+  end
+
+  local tui = require("ledger.tui").get()
+  tui:set_keymaps()
 end
 
 --- Config is a singleton, allowing us to call `get` as many times as we
@@ -176,7 +199,6 @@ function M.setup(overrides)
     setmetatable(with_overrides.diagnostics, LedgerConfigDiagnostics)
 
     instance = setmetatable(with_overrides, LedgerConfig)
-    instance:set_keymaps()
   end
   return instance
 end
