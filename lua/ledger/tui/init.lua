@@ -1,67 +1,34 @@
+local layout = require("ledger.tui.layout")
+local logger = require("ledger.logger").get()
+local reports = require("ledger.tui.reports")
+
 local M = {}
 
---- @class LedgerTui
+--- @class ledger.Tui
+--- @field layout ledger.TuiLayout
+--- @field reports ledger.TuiReports
+--- @field running boolean
 local LedgerTui = {}
 LedgerTui.__index = LedgerTui
 
---- @class LedgerTui
+--- @class ledger.Tui
 local instance
 
-function LedgerTui:set_autocmds() end
-
---- @param buffer integer
-function LedgerTui:set_buffer_options(buffer)
-  vim.bo.buftype = "nofile"
-  vim.bo.bufhidden = "wipe"
-  vim.bo.swapfile = false
-  vim.api.nvim_set_option_value("number", false, {})
-  vim.api.nvim_set_option_value("relativenumber", false, {})
-  vim.api.nvim_set_option_value("signcolumn", "no", {})
-end
-
 function LedgerTui:setup()
-  print("initializing")
-  -- Create a vertical split (left: information buffer, right: output buffer)
-  vim.cmd("vsplit")
+  if self.running then
+    print("ledger.nvim already has the tui open")
+    return
+  end
 
-  -- Create an empty buffer for the output in the right window
-  local output_buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_set_current_buf(output_buf)
-
-  -- Set buffer options for output buffer
-  self:set_buffer_options(output_buf)
-  local output_width = math.ceil(vim.o.columns * 0.75)
-  vim.cmd("vertical resize " .. output_width)
-
-  -- Create a horizontal split below the output buffer (filters buffer)
-  vim.cmd("split")
-
-  -- Create an empty buffer for the filters in the bottom window
-  local filters_buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_set_current_buf(filters_buf)
-
-  -- Set buffer options for filters buffer
-  self:set_buffer_options(filters_buf)
-  local filter_height = math.ceil(vim.o.lines * 0.15)
-  vim.cmd("horizontal resize " .. filter_height)
-
-  -- Move back to the original left split (information buffer)
-  vim.cmd("wincmd h")
-
-  -- Create an empty buffer for the information in the left window
-  local info_buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_set_current_buf(info_buf)
-
-  -- Set buffer options for information buffer
-  self:set_buffer_options(info_buf)
-
-  -- Optionally set keymaps to close each buffer/window
-  vim.api.nvim_buf_set_keymap(output_buf, "n", "q", ":q<CR>", { noremap = true, silent = true })
-  vim.api.nvim_buf_set_keymap(filters_buf, "n", "q", ":q<CR>", { noremap = true, silent = true })
-  vim.api.nvim_buf_set_keymap(info_buf, "n", "q", ":q<CR>", { noremap = true, silent = true })
+  logger:info("initializing tui view")
+  self.running = true
+  self.layout:setup_windows()
+  self.layout:setup_aucmds()
+  self.reports:populate_reports()
 end
 
 function LedgerTui:shutdown()
+  self.layout:restore_window_options()
   print("shutting down")
 end
 
@@ -85,7 +52,11 @@ end
 
 function M.setup()
   if not instance then
-    instance = setmetatable({}, LedgerTui)
+    local layout_instance = layout.setup()
+    instance = setmetatable({
+      layout = layout_instance,
+      reports = reports.setup(layout_instance),
+    }, LedgerTui)
   end
   return instance
 end

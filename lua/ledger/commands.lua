@@ -4,7 +4,6 @@ local M = {}
 
 --- @class LedgerCommands
 --- @field augroup integer
---- @field tui_augroup integer
 --- @field output_augroup integer
 local LedgerCommands = {}
 LedgerCommands.__index = LedgerCommands
@@ -14,7 +13,6 @@ local instance
 
 function LedgerCommands:create_augroups()
   self.augroup = vim.api.nvim_create_augroup("Ledger", {})
-  self.tui_augroup = vim.api.nvim_create_augroup("LedgerTui", {})
   self.output_augroup = vim.api.nvim_create_augroup("LedgerOutput", {})
 end
 
@@ -111,10 +109,6 @@ function LedgerCommands:setup_autocommands()
       end
     end,
   })
-end
-
-function LedgerCommands:setup_tui_autocommands()
-  self.tui_augroup = tui
 end
 
 function M.setup()

@@ -1,10 +1,12 @@
 local queries = require("ledger.queries")
 local ts_utils = require("nvim-treesitter.ts_utils")
 
+--- @alias TSQueryIter fun(end_line: integer|nil):integer, TSNode, vim.treesitter.query.TSMetadata, TSQueryMatch
+
 --- @class ledger.parser
 --- @field get_parser fun(source: string): TSSource
 --- @field find_current_scope fun(): Scope
---- @field query_iter fun(query: vim.treesitter.Query, node: TSNode, source: string): fun(end_line: integer|nil):integer, TSNode, vim.treesitter.query.TSMetadata, TSQueryMatch
+--- @field query_iter fun(query: vim.treesitter.Query, node: TSNode, source: string): TSQueryIter
 --- @field get_account_names_from_source fun(node: TSNode, source: string, filename: string, ctx: ledger.Context)
 --- @field get_commodities_from_source fun(node: TSNode, source: string, filename: string, ctx: ledger.Context)
 local M = {}
