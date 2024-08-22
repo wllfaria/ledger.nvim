@@ -2,6 +2,15 @@ local M = {}
 
 --- @class ledger.Tui
 --- @field enabled boolean
+--- @field sections table<string, ledger.TuiSection>
+
+--- @class ledger.TuiFilter
+--- @field flag string
+--- @field input boolean
+
+--- @class ledger.TuiSection
+--- @field command string
+--- @field filters table<string, ledger.TuiFilter[]>
 
 --- @class ledger.SnippetKeymaps
 --- @field new_account string[]
@@ -53,6 +62,7 @@ local M = {}
 --- @field strict boolean
 
 --- @class ledger.Config
+--- @field plugin_name string
 --- @field extensions string[]
 --- @field default_ignored_paths string[]
 --- @field completion ledger.Completion
@@ -125,6 +135,7 @@ end
 local function get_default_config()
   --- @type ledger.Config
   local default_config = {
+    plugin_name = "ledger.nvim",
     extensions = {
       "ledger",
       "hledger",
@@ -160,6 +171,26 @@ local function get_default_config()
     },
     tui = {
       enabled = true,
+      sections = {
+        ["Show Balance"] = {
+          command = "ledger --strict -f main.ledger bal",
+          filters = {
+            ["Period"] = {
+              flag = "-p",
+              input = true,
+            },
+          },
+        },
+        ["Show Budget"] = {
+          command = "ledger --strict -f main.ledger budget",
+          filters = {
+            ["Period"] = {
+              flag = "-p",
+              input = true,
+            },
+          },
+        },
+      },
     },
   }
 
