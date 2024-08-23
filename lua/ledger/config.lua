@@ -184,7 +184,7 @@ local function get_default_config()
         ["Show Budget"] = {
           command = "ledger --strict -f main.ledger budget",
           filters = {
-            ["Period"] = {
+            ["Another"] = {
               flag = "-p",
               input = true,
             },
