@@ -25,6 +25,7 @@ function LedgerTui:setup()
   self.layout:setup_windows()
   self.layout:setup_aucmds()
   self.reports:populate_reports()
+  self.reports:populate_filters()
 end
 
 function LedgerTui:shutdown()
