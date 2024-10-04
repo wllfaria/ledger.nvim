@@ -170,6 +170,11 @@ function M.setup(overrides)
   if not instance then
     local default = get_default_config()
     local with_overrides = vim.tbl_deep_extend("force", default, overrides or {})
+
+    setmetatable(with_overrides.snippets, LedgerConfigSnippets)
+    setmetatable(with_overrides.completion, LedgerConfigCompletion)
+    setmetatable(with_overrides.diagnostics, LedgerConfigDiagnostics)
+
     instance = setmetatable(with_overrides, LedgerConfig)
     instance:set_keymaps()
   end
