@@ -8,6 +8,9 @@ local M = {}
 local LedgerCommands = {}
 LedgerCommands.__index = LedgerCommands
 
+--- @class LedgerCommands
+local instance
+
 function LedgerCommands:create_augroups()
   self.augroup = vim.api.nvim_create_augroup("Ledger", {})
   self.output_augroup = vim.api.nvim_create_augroup("LedgerOutput", {})
@@ -109,8 +112,10 @@ function LedgerCommands:setup_autocommands()
 end
 
 function M.setup()
-  local self = setmetatable({}, LedgerCommands)
-  return self
+  if not instance then
+    instance = setmetatable({}, LedgerCommands)
+  end
+  return instance
 end
 
 return M

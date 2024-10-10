@@ -54,6 +54,12 @@ function M.setup(overrides)
     require("ledger.diagnostics").get_diagnostics()
   end
 
+  if config.tui.enabled then
+    require("ledger.tui").setup()
+  end
+
+  config:set_keymaps()
+
   --- @type ledger.Main
   local default = {
     context = context,

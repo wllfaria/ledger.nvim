@@ -1,5 +1,17 @@
 local M = {}
 
+--- @class ledger.Tui
+--- @field enabled boolean
+--- @field sections table<string, ledger.TuiSection>
+
+--- @class ledger.TuiFilter
+--- @field flag string
+--- @field input boolean
+
+--- @class ledger.TuiSection
+--- @field command string
+--- @field filters table<string, ledger.TuiFilter[]>
+
 --- @class ledger.SnippetKeymaps
 --- @field new_account string[]
 --- @field new_posting string[]
@@ -11,9 +23,14 @@ local M = {}
 --- @field key string
 --- @field command string
 
+--- @class ledger.TuiKeymaps
+--- @field initialize string[]
+--- @field shutdown string[]
+
 --- @class ledger.Keymaps
 --- @field snippets ledger.SnippetKeymaps
 --- @field reports ledger.ReportKeymap[]
+--- @field tui ledger.TuiKeymaps
 
 --- @class ledger.PartialKeymaps
 --- @field snippets? ledger.SnippetKeymaps
@@ -45,12 +62,14 @@ local M = {}
 --- @field strict boolean
 
 --- @class ledger.Config
+--- @field plugin_name string
 --- @field extensions string[]
 --- @field default_ignored_paths string[]
 --- @field completion ledger.Completion
 --- @field snippets ledger.Snippet
 --- @field keymaps ledger.Keymaps
 --- @field diagnostics ledger.Diagnostics
+--- @field tui ledger.Tui
 local LedgerConfig = {}
 LedgerConfig.__index = LedgerConfig
 
@@ -116,6 +135,7 @@ end
 local function get_default_config()
   --- @type ledger.Config
   local default_config = {
+    plugin_name = "ledger.nvim",
     extensions = {
       "ledger",
       "hledger",
@@ -144,6 +164,33 @@ local function get_default_config()
         new_commodity = { "cm" },
       },
       reports = {},
+      tui = {
+        initialize = { "<leader>tui" },
+        shutdown = { "<leader>tud" },
+      },
+    },
+    tui = {
+      enabled = true,
+      sections = {
+        ["Show Balance"] = {
+          command = "ledger --strict -f main.ledger bal",
+          filters = {
+            ["Period"] = {
+              flag = "-p",
+              input = true,
+            },
+          },
+        },
+        ["Show Budget"] = {
+          command = "ledger --strict -f main.ledger budget",
+          filters = {
+            ["Another"] = {
+              flag = "-p",
+              input = true,
+            },
+          },
+        },
+      },
     },
   }
 
@@ -158,6 +205,13 @@ function LedgerConfig:set_keymaps()
       commands:run_report(keymap.command)
     end)
   end
+
+  if not self.tui.enabled then
+    return
+  end
+
+  local tui = require("ledger.tui").get()
+  tui:set_keymaps()
 end
 
 --- Config is a singleton, allowing us to call `get` as many times as we
@@ -176,7 +230,6 @@ function M.setup(overrides)
     setmetatable(with_overrides.diagnostics, LedgerConfigDiagnostics)
 
     instance = setmetatable(with_overrides, LedgerConfig)
-    instance:set_keymaps()
   end
   return instance
 end
