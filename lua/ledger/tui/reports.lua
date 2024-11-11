@@ -19,35 +19,42 @@ LedgerReports.__index = LedgerReports
 --- @class ledger.TuiReports
 local instance
 
-function LedgerReports:populate_filters()
-  local ok, current_report = self:maybe_get_current_report()
-  if not ok then
-    return
+--- @param report string | nil
+function LedgerReports:populate_filters(report)
+  --- @type string
+  local current_report
+
+  if report ~= nil then
+    current_report = report
+  end
+
+  if report == nil then
+    local ok, active_report = self:maybe_get_current_report()
+    if not ok then
+      return
+    end
+    current_report = active_report
   end
 
   for name, command in pairs(config.tui.sections) do
     if name == current_report then
       local content = {}
+
       for name, _ in pairs(command.filters) do
-        table.insert(content, name)
+        local formatted = name
+        if self.filters[current_report] ~= nil and self.filters[current_report].active[name] ~= nil then
+          formatted = " " .. formatted
+        end
+        table.insert(content, formatted)
       end
+
       table.sort(content, function(a, b)
         return a < b and true or false
       end)
+
       self.layout.set_buffer_content(self.layout.filters_buf, content)
       return
     end
-  end
-
-  if self.filters[current_report] ~= nil then
-    local filters = {}
-
-    for name, filter in pairs(self.filters[current_report].active) do
-      local formatted = name .. " (" .. filter.flag .. ") " .. filter.value
-      table.insert(filters, formatted)
-    end
-
-    -- self.layout.set_buffer_content(self.layout.applied_filters_buf, filters)
   end
 end
 

@@ -14,7 +14,6 @@ local HL_GROUPS = {
 --- @field previous_signcolumn "no" | "yes"
 --- @field output_buf integer
 --- @field filters_buf integer
---- @field applied_filters_buf integer
 --- @field reports_buf integer
 --- @field hint_buf integer
 --- @field help_buf integer
@@ -105,12 +104,6 @@ function LedgerTuiLayout:setup_windows()
   local filter_width = math.ceil(vim.o.columns * 0.15)
 
   vim.cmd("vertical resize " .. filter_width)
-
-  local applied_filters_buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_set_current_buf(applied_filters_buf)
-  self.set_buffer_options()
-  self:set_window_options()
-  vim.cmd("horizontal resize " .. filter_width)
   vim.cmd("wincmd h")
   vim.cmd("wincmd h")
 
@@ -124,7 +117,6 @@ function LedgerTuiLayout:setup_windows()
   vim.defer_fn(function()
     vim.api.nvim_set_option_value("modifiable", false, { buf = output_buf })
     vim.api.nvim_set_option_value("modifiable", false, { buf = filters_buf })
-    vim.api.nvim_set_option_value("modifiable", false, { buf = applied_filters_buf })
     vim.api.nvim_set_option_value("modifiable", false, { buf = reports_buf })
   end, 100)
 
@@ -133,7 +125,6 @@ function LedgerTuiLayout:setup_windows()
   self.output_buf = output_buf
   self.filters_buf = filters_buf
   self.reports_buf = reports_buf
-  self.applied_filters_buf = applied_filters_buf
   self:setup_keymaps()
 end
 
@@ -275,7 +266,7 @@ local function toggle_help_popup()
     " [f]     - select filters buffer",
     " [r]     - select reports buffer",
     " [h]     - hides hint buffer",
-    "",
+    " [t]     - toggle selected filter",
     "",
     "",
     close_message,
@@ -309,7 +300,13 @@ local function open_filter_input_popup()
   if #selected_filter == 0 then
     return
   end
+
   local filter_name = selected_filter[1]
+  if #filter_name == 0 then
+    return
+  end
+
+  filter_name = filter_name:gsub(" ", "")
 
   --- @type integer | nil
   local reports_win = nil
@@ -504,6 +501,57 @@ local function focus_filters()
   end
 end
 
+local function toggle_filter()
+  local layout = require("ledger.tui.layout").get()
+  local reports = require("ledger.tui.reports").get()
+
+  --- @type integer | nil
+  local reports_win = nil
+
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    if vim.api.nvim_win_get_buf(win) == layout.reports_buf then
+      reports_win = win
+      break
+    end
+  end
+
+  if not reports_win then
+    return
+  end
+
+  local row, _ = unpack(vim.api.nvim_win_get_cursor(reports_win))
+  local selected_report = vim.api.nvim_buf_get_lines(layout.reports_buf, row - 1, row, false)
+  if #selected_report == 0 then
+    return
+  end
+  local report_name = selected_report[1]
+  if #report_name == 0 then
+    return
+  end
+
+  local row, _ = unpack(vim.api.nvim_win_get_cursor(0))
+  local selected_filter = vim.api.nvim_buf_get_lines(layout.filters_buf, row - 1, row, false)
+  if #selected_filter == 0 then
+    return
+  end
+
+  local filter_name = selected_filter[1]
+  if #filter_name == 0 then
+    return
+  end
+
+  if not filter_name:gmatch(" ") then
+    return
+  end
+
+  local filter_name = filter_name:gsub(" ", "")
+  reports.filters[report_name].active[filter_name] = nil
+  layout.focus_reports()
+  reports:populate_filters(report_name)
+  reports:maybe_run_command()
+  layout:update_hint()
+end
+
 function LedgerTuiLayout:setup_keymaps()
   --- @param buffer integer
   local function set_buffer_maps(buffer)
@@ -523,8 +571,9 @@ function LedgerTuiLayout:setup_keymaps()
   set_buffer_maps(self.output_buf)
   set_buffer_maps(self.filters_buf)
   set_buffer_maps(self.hint_buf)
-  -- set_buffer_maps(self.applied_filters_buf)
 
+  vim.api.nvim_buf_create_user_command(self.filters_buf, "ToggleFilter", toggle_filter, {})
+  vim.api.nvim_buf_set_keymap(self.filters_buf, "n", "t", ":ToggleFilter<CR>", {})
   vim.api.nvim_buf_create_user_command(self.filters_buf, "OpenFilterInput", open_filter_input_popup, {})
   vim.api.nvim_buf_set_keymap(self.filters_buf, "n", "<CR>", ":OpenFilterInput<CR>", {})
 end
