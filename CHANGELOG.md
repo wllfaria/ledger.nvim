@@ -1,3 +1,20 @@
+# [0.3.0](https://github.com/wllfaria/ledger.nvim/compare/v0.2.0...v0.3.0) (2024-11-11)
+
+
+### Bug Fixes
+
+* fixing metatable overriding on config initialization ([8c22259](https://github.com/wllfaria/ledger.nvim/commit/8c22259fbe54aeeff1cf500b5d0871e8143250bc))
+
+
+### Features
+
+* displaying help messages and actually updating things ([d4faf00](https://github.com/wllfaria/ledger.nvim/commit/d4faf00dc8483b4abd9a7706242d693ee40bb035))
+* implementing filters ([17e4a7f](https://github.com/wllfaria/ledger.nvim/commit/17e4a7f87f3d8995c981330db656962e451db3a0))
+* initial display of commands output ([536468c](https://github.com/wllfaria/ledger.nvim/commit/536468cf87415a14784bbce371a3b3ca54dd5eb7))
+* toggling filters ([cd6c60e](https://github.com/wllfaria/ledger.nvim/commit/cd6c60ee9cbcd34e6c6043cec1dfae60a9c606e2))
+
+
+
 # [0.2.0](https://github.com/wllfaria/ledger.nvim/compare/v0.1.0...v0.2.0) (2024-08-20)
 
 
