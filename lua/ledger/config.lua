@@ -3,6 +3,7 @@ local M = {}
 --- @class ledger.Tui
 --- @field enabled boolean
 --- @field sections table<string, ledger.TuiSection>
+--- @field open_in_tab boolean
 
 --- @class ledger.TuiFilter
 --- @field flag string
@@ -171,6 +172,7 @@ local function get_default_config()
     },
     tui = {
       enabled = true,
+      open_in_tab = true,
       sections = {
         ["Show Balance"] = {
           command = "ledger --strict -f main.ledger bal",

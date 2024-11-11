@@ -3,8 +3,16 @@ local logger = require("ledger.logger").get()
 
 local M = {}
 
+--- @class ledger.TuiReportEntryFilter
+--- @field flag string
+--- @field value string
+
+--- @class ledger.TuiReportEntry
+--- @field active table<string, ledger.TuiReportEntryFilter>
+
 --- @class ledger.TuiReports
 --- @field layout ledger.TuiLayout
+--- @field filters table<string, ledger.TuiReportEntry>
 local LedgerReports = {}
 LedgerReports.__index = LedgerReports
 
@@ -29,6 +37,17 @@ function LedgerReports:populate_filters()
       self.layout.set_buffer_content(self.layout.filters_buf, content)
       return
     end
+  end
+
+  if self.filters[current_report] ~= nil then
+    local filters = {}
+
+    for name, filter in pairs(self.filters[current_report].active) do
+      local formatted = name .. " (" .. filter.flag .. ") " .. filter.value
+      table.insert(filters, formatted)
+    end
+
+    -- self.layout.set_buffer_content(self.layout.applied_filters_buf, filters)
   end
 end
 
@@ -63,6 +82,21 @@ function LedgerReports:maybe_get_current_report()
   return true, row_content[1]
 end
 
+--- @param name string
+--- @param command ledger.TuiSection
+--- @return string
+function LedgerReports:apply_filters(name, command)
+  local command_string = command.command
+
+  if self.filters[name] then
+    for _, filter in pairs(self.filters[name].active) do
+      command_string = command_string .. " " .. filter.flag .. " " .. filter.value
+    end
+  end
+
+  return command_string
+end
+
 function LedgerReports:maybe_run_command()
   local ok, current_report = self:maybe_get_current_report()
   if not ok then
@@ -72,9 +106,11 @@ function LedgerReports:maybe_run_command()
   for name, command in pairs(config.tui.sections) do
     if name == current_report then
       local cwd = require("ledger.files").cwd()
-      logger:info('running command "' .. command.command)
 
-      local ok, pid = pcall(vim.system, vim.split(command.command, " "), { cwd = cwd })
+      local command = self:apply_filters(name, command)
+      logger:info('running command "' .. command)
+
+      local ok, pid = pcall(vim.system, vim.split(command, " "), { cwd = cwd })
       if not ok then
         logger:error("failed to run command")
         error("failed to run command")
@@ -89,7 +125,6 @@ function LedgerReports:maybe_run_command()
 
       local output_splitted = vim.split(output, "\n")
       self.layout.set_buffer_content(self.layout.output_buf, output_splitted)
-
       return
     end
   end
@@ -101,6 +136,7 @@ function M.setup(layout)
   if not instance then
     instance = setmetatable({
       layout = layout,
+      filters = {},
     }, LedgerReports)
   end
   return instance
