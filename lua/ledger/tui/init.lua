@@ -15,6 +15,8 @@ LedgerTui.__index = LedgerTui
 local instance
 
 function LedgerTui:setup()
+  local config = require("ledger.config").get()
+
   if self.running then
     print("ledger.nvim already has the tui open")
     return
@@ -22,6 +24,11 @@ function LedgerTui:setup()
 
   logger:info("initializing tui view")
   self.running = true
+
+  if config.tui.open_in_tab then
+    vim.cmd("tabnew")
+  end
+
   self.layout:setup_windows()
   self.layout:setup_aucmds()
   self.reports:populate_reports()
@@ -30,7 +37,12 @@ end
 
 function LedgerTui:shutdown()
   self.layout:restore_window_options()
-  print("shutting down")
+  self.layout:close_buffer(self.layout.reports_buf)
+  self.layout:close_buffer(self.layout.help_buf)
+  self.layout:close_buffer(self.layout.hint_buf)
+  self.layout:close_buffer(self.layout.output_buf)
+  self.layout:close_buffer(self.layout.filters_buf)
+  self.running = false
 end
 
 function LedgerTui:set_keymaps()

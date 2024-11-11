@@ -14,6 +14,7 @@ local HL_GROUPS = {
 --- @field previous_signcolumn "no" | "yes"
 --- @field output_buf integer
 --- @field filters_buf integer
+--- @field applied_filters_buf integer
 --- @field reports_buf integer
 --- @field hint_buf integer
 --- @field help_buf integer
@@ -50,21 +51,33 @@ function LedgerTuiLayout.set_buffer_options()
   vim.bo.swapfile = false
 end
 
+--- @param buffer integer
+function LedgerTuiLayout:close_buffer(buffer)
+  if buffer == nil then
+    return
+  end
+
+  if vim.api.nvim_buf_is_valid(buffer) then
+    vim.api.nvim_buf_delete(buffer, { force = true })
+  end
+end
+
 --- sets up all the windows for the tui layout, which consists
 --- of three buffers, one for the reports, one for the output
 --- and one for working with filters, which is supposed to look
 --- something like this:
 ---
 --- ┌───┬───────────┬───┐
---- │   │           │   │
---- │ R │     O     │ F │
---- │   │           │   │
+--- │   │           │ F │
+--- │ R │     O     ├───┤
+--- │   │           │ A │
 --- ├───┴───────────┴───┤
 --- │       HINT        │
 --- └───────────────────┘
 --- R: Reports pane
 --- O: Outputs pane
 --- F: Filters pane
+--- A: Applied Filters pane
 function LedgerTuiLayout:setup_windows()
   vim.cmd("split")
   local hint_buf = vim.api.nvim_create_buf(false, true)
@@ -92,6 +105,12 @@ function LedgerTuiLayout:setup_windows()
   local filter_width = math.ceil(vim.o.columns * 0.15)
 
   vim.cmd("vertical resize " .. filter_width)
+
+  local applied_filters_buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_set_current_buf(applied_filters_buf)
+  self.set_buffer_options()
+  self:set_window_options()
+  vim.cmd("horizontal resize " .. filter_width)
   vim.cmd("wincmd h")
   vim.cmd("wincmd h")
 
@@ -105,6 +124,7 @@ function LedgerTuiLayout:setup_windows()
   vim.defer_fn(function()
     vim.api.nvim_set_option_value("modifiable", false, { buf = output_buf })
     vim.api.nvim_set_option_value("modifiable", false, { buf = filters_buf })
+    vim.api.nvim_set_option_value("modifiable", false, { buf = applied_filters_buf })
     vim.api.nvim_set_option_value("modifiable", false, { buf = reports_buf })
   end, 100)
 
@@ -113,6 +133,7 @@ function LedgerTuiLayout:setup_windows()
   self.output_buf = output_buf
   self.filters_buf = filters_buf
   self.reports_buf = reports_buf
+  self.applied_filters_buf = applied_filters_buf
   self:setup_keymaps()
 end
 
@@ -373,6 +394,57 @@ local function open_filter_input_popup()
 
   vim.api.nvim_open_win(hint_buf, false, win_config(center_y + 3 + 1, center_x, 4, "Summary"))
   vim.api.nvim_open_win(input_buf, true, win_config(center_y, center_x, 1))
+
+  vim.api.nvim_create_autocmd({ "BufLeave" }, {
+    group = layout.augroup,
+    buffer = input_buf,
+    callback = function()
+      if vim.api.nvim_buf_is_valid(hint_buf) then
+        vim.api.nvim_buf_delete(hint_buf, { force = true })
+      end
+      if vim.api.nvim_buf_is_valid(input_buf) then
+        vim.api.nvim_buf_delete(input_buf, { force = true })
+      end
+    end,
+  })
+
+  vim.api.nvim_buf_set_option(input_buf, "buftype", "acwrite")
+  vim.api.nvim_buf_set_option(input_buf, "bufhidden", "wipe")
+  vim.api.nvim_buf_set_option(input_buf, "swapfile", false)
+  vim.api.nvim_buf_set_name(input_buf, "InputBuffer")
+
+  vim.api.nvim_create_autocmd({ "BufWriteCmd" }, {
+    buffer = input_buf,
+    callback = function()
+      local lines = vim.api.nvim_buf_get_lines(input_buf, 0, -1, false)
+
+      if #lines > 0 then
+        local reports = require("ledger.tui.reports").get()
+        local layout = require("ledger.tui.layout").get()
+
+        local input = lines[1]
+        if reports.filters[report_name] == nil then
+          reports.filters[report_name] = { active = {} }
+        end
+        reports.filters[report_name].active[filter_name] = {
+          flag = filter.flag,
+          value = input,
+        }
+        logger:info("applying filter '" .. filter_name .. "' with input '" .. input .. "'")
+        layout.focus_reports()
+        reports:maybe_run_command()
+        reports:populate_filters()
+        layout:update_hint()
+      end
+
+      if vim.api.nvim_buf_is_valid(input_buf) then
+        vim.api.nvim_buf_delete(input_buf, { force = true })
+      end
+      if vim.api.nvim_buf_is_valid(hint_buf) then
+        vim.api.nvim_buf_delete(hint_buf, { force = true })
+      end
+    end,
+  })
 end
 
 local function dismiss_hint()
@@ -382,8 +454,10 @@ local function dismiss_hint()
     vim.api.nvim_set_current_buf(layout.reports_buf)
   end
 
-  vim.api.nvim_buf_delete(layout.hint_buf, {})
-  layout.hint_buf = -1
+  if vim.api.nvim_buf_is_valid(layout.hint_buf) then
+    vim.api.nvim_buf_delete(layout.hint_buf, {})
+    layout.hint_buf = -1
+  end
 end
 
 local function focus_reports()
@@ -404,6 +478,10 @@ local function focus_reports()
       break
     end
   end
+end
+
+function LedgerTuiLayout:focus_reports()
+  focus_reports()
 end
 
 local function focus_filters()
@@ -445,6 +523,7 @@ function LedgerTuiLayout:setup_keymaps()
   set_buffer_maps(self.output_buf)
   set_buffer_maps(self.filters_buf)
   set_buffer_maps(self.hint_buf)
+  -- set_buffer_maps(self.applied_filters_buf)
 
   vim.api.nvim_buf_create_user_command(self.filters_buf, "OpenFilterInput", open_filter_input_popup, {})
   vim.api.nvim_buf_set_keymap(self.filters_buf, "n", "<CR>", ":OpenFilterInput<CR>", {})
