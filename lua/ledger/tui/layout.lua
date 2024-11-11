@@ -51,7 +51,7 @@ function LedgerTuiLayout.set_buffer_options()
 end
 
 --- @param buffer integer
-function LedgerTuiLayout:close_buffer(buffer)
+function LedgerTuiLayout.close_buffer(buffer)
   if buffer == nil then
     return
   end
@@ -475,10 +475,6 @@ local function focus_reports()
       break
     end
   end
-end
-
-function LedgerTuiLayout:focus_reports()
-  focus_reports()
 end
 
 local function focus_filters()
