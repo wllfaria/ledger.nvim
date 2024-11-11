@@ -37,11 +37,11 @@ end
 
 function LedgerTui:shutdown()
   self.layout:restore_window_options()
-  self.layout:close_buffer(self.layout.reports_buf)
-  self.layout:close_buffer(self.layout.help_buf)
-  self.layout:close_buffer(self.layout.hint_buf)
-  self.layout:close_buffer(self.layout.output_buf)
-  self.layout:close_buffer(self.layout.filters_buf)
+  self.layout.close_buffer(self.layout.reports_buf)
+  self.layout.close_buffer(self.layout.help_buf)
+  self.layout.close_buffer(self.layout.hint_buf)
+  self.layout.close_buffer(self.layout.output_buf)
+  self.layout.close_buffer(self.layout.filters_buf)
   self.running = false
 end
 
